@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "author": "sankchaichan _",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-breadboard-half", "id": "bb1", "top": -41.4, "left": 79.6, "attrs": {} },
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": -28.8, "left": -62.36, "attrs": {} },
+    {
+      "type": "wokwi-buzzer",
+      "id": "bz1",
+      "top": -74.4,
+      "left": 165,
+      "attrs": { "volume": "0.1" }
+    },
+    { "type": "wokwi-hc-sr04", "id": "ultrasonic1", "top": 11.1, "left": 245.5, "attrs": {} },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": -22.8,
+      "left": 147.8,
+      "attrs": { "color": "red" }
+    },
+    { "type": "wokwi-relay-module", "id": "relay1", "top": 240.2, "left": 134.4, "attrs": {} }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "bb1:10t.b", "bb1:tn.5", "black", [ "v9.6", "h-134.4" ] ],
+    [ "bb1:tn.1", "esp:GND.2", "black", [ "v-0.1", "h-84.8" ] ],
+    [ "bb1:tp.1", "esp:5V", "red", [ "v0.3", "h-190.4", "v259.2" ] ],
+    [ "bb1:26b.j", "bb1:tn.4", "black", [ "v19.2", "h-278.4" ] ],
+    [ "bb1:23b.j", "bb1:tp.2", "red", [ "v9.6", "h-240" ] ],
+    [ "relay1:VCC", "bb1:tp.3", "red", [ "h0" ] ],
+    [ "bb1:7t.d", "bb1:tn.3", "black", [ "v9.6", "h-76.8" ] ],
+    [ "relay1:NO", "bb1:8t.d", "green", [ "h39.6", "v-97.8", "h-124.8" ] ],
+    [ "relay1:GND", "bb1:tn.2", "black", [ "h0" ] ],
+    [ "relay1:COM", "bb1:tp.20", "red", [ "h0" ] ],
+    [ "bb1:11t.b", "relay1:NO", "red", [ "v230.4", "h163.2" ] ],
+    [ "bb1:25b.j", "esp:4", "green", [ "v0" ] ],
+    [ "esp:17", "relay1:IN", "black", [ "h19.2", "v172.8", "h19.2" ] ],
+    [ "bz1:1", "bb1:10t.a", "", [ "$bb" ] ],
+    [ "bz1:2", "bb1:11t.a", "", [ "$bb" ] ],
+    [ "ultrasonic1:VCC", "bb1:23b.i", "", [ "$bb" ] ],
+    [ "ultrasonic1:TRIG", "bb1:24b.i", "", [ "$bb" ] ],
+    [ "ultrasonic1:ECHO", "bb1:25b.i", "", [ "$bb" ] ],
+    [ "ultrasonic1:GND", "bb1:26b.i", "", [ "$bb" ] ],
+    [ "led1:A", "bb1:8t.b", "", [ "$bb" ] ],
+    [ "led1:C", "bb1:7t.b", "", [ "$bb" ] ],
+    [ "bb1:24b.j", "esp:16", "green", [ "v0" ] ]
+  ],
+  "dependencies": {}
+}
