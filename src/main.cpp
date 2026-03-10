@@ -1,54 +1,85 @@
 #include <Arduino.h>
+#include <SPI.h>
 #include <NewPing.h>
+#include <Adafruit_ILI9341.h>
 
 // ===== Ultrasonic =====
 #define TRIG_PIN 4
 #define ECHO_PIN 16
 #define MAX_DISTANCE 200
 
+#define TFT_CS 33
+#define TFT_RST 32
+#define TFT_DC 25
+
 NewPing sonar(TRIG_PIN, ECHO_PIN, MAX_DISTANCE);
 
 // ===== Output =====
 #define BUZZER_PIN 17
-#define LED_PIN    18  // LED บนบอร์ด ESP32
-
-// ===== Buzzer PWM =====
+Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 #define BUZZER_CHANNEL 0
-#define BUZZER_FREQ 2500
-#define BUZZER_RES 8   // 0–255
+#define BUZZER_FREQ 2000
+#define BUZZER_RES 8
 
-void setup() {
+
+
+void setup()
+{
   Serial.begin(115200);
 
-  pinMode(LED_PIN, OUTPUT);
-
-  // PWM สำหรับ ESP32
+  // ===== Buzzer setup =====
   ledcSetup(BUZZER_CHANNEL, BUZZER_FREQ, BUZZER_RES);
   ledcAttachPin(BUZZER_PIN, BUZZER_CHANNEL);
-  ledcWrite(BUZZER_CHANNEL, 0); // เงียบก่อน
+  ledcWrite(BUZZER_CHANNEL, 0);
 
-   if (Serial.available() > 0) {  //ถ้าคอมพิวเตอร์ส่งข้อมูลมาใหจะทำใน if นี้
-    int key = Serial.read();        //นำค่าที่คอมพิวเตอร์ส่งมาเก็บในตัวแปร key
-    Serial.print("key : ");
-    Serial.println(key);         //Arduino ส่งค่าในตัวแปร key เข้าคอมพิวเตอร์ Serial Monitor
-  }
+  // ===== TFT setup =====
+  tft.begin();
+  tft.setRotation(1); // แนวนอน
+  tft.fillScreen(ILI9341_BLACK);
+  tft.setTextSize(4); // ✅ ใหญ่ขึ้น (ลองเปลี่ยนเป็น 3,4,5 ได้)
+  tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 }
-//wemos_d1_mini32
-void loop() {
-  delay(100);
 
+void drawDisplay(int distance) {
+  uint16_t color = (distance > 0 && distance <= 50) 
+                   ? ILI9341_RED 
+                   : ILI9341_WHITE;
+
+  tft.fillScreen(ILI9341_BLACK);
+
+  tft.setTextSize(8);
+  tft.setTextColor(color, ILI9341_BLACK);
+
+  int digits = (distance <= 0) ? 3 : (distance < 10 ? 1 : (distance < 100 ? 2 : 3));
+  int x = (320 - digits * 48) / 2;
+  tft.setCursor(x, 60);
+
+  if (distance <= 0) tft.print("---");
+  else               tft.print(distance);
+
+  tft.setTextSize(3);
+  tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+  tft.setCursor(130, 175);
+  tft.print("cm");
+}
+
+void loop()
+{
+  delay(100);
   int distance = sonar.ping_cm();
 
   Serial.print("Distance: ");
   Serial.print(distance);
   Serial.println(" cm");
 
-  if (distance > 0 && distance <= 100) {
-    // ===== ใกล้ → ดัง =====
-    digitalWrite(LED_PIN, HIGH);     // ใช้ดูตอนจำลอง
-    ledcWrite(BUZZER_CHANNEL, 180);  // ของจริงดังยาว
-  } else {
-    digitalWrite(LED_PIN, LOW);
-    ledcWrite(BUZZER_CHANNEL, 0);    // เงียบ
+  drawDisplay(distance);
+
+  if (distance > 0 && distance <= 50)
+  {
+    ledcWrite(BUZZER_CHANNEL, 180);
+  }
+  else
+  {
+    ledcWrite(BUZZER_CHANNEL, 0);
   }
 }
