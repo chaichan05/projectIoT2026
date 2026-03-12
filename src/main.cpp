@@ -28,8 +28,8 @@ NewPing sonar(TRIG_PIN, ECHO_PIN, MAX_DISTANCE);
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 
 // ===== WiFi =====
-const char *ssid     = "1617";
-const char *password = "kukps1617";
+const char *ssid     = "sannnnnk";
+const char *password = "11111111";
 WiFiClient wifiClient;
 
 // ===== NETPIE MQTT =====
@@ -45,7 +45,6 @@ PubSubClient mqttClient(wifiClient);
 #define PUBLISH_INTERVAL 2000
 unsigned long lastPublish = 0;
 
-// ===== เพิ่ม: นับจำนวนครั้งที่ buzzer ดัง =====
 bool buzzerWasOn = false;
 int  alertCount  = 0;
 
@@ -61,7 +60,7 @@ void setup_wifi() {
   Serial.println("\nWiFi connected — IP: " + WiFi.localIP().toString());
 }
 
-int distanceCounter = 1; // สำหรับสร้าง ID ใน Firebase
+int distanceCounter = 1; //สร้าง ID ใน Firebase
 
 void sendToFirebase(int distance, int alertCount)
 {
@@ -106,10 +105,8 @@ void reconnectMQTT() {
   }
 }
 
-// ===== เพิ่ม alertCount ใน JSON =====
+
 void publishData(int distance, int count) {
-  // {"data":{"distance":45,"alertCount":3}}
-  // ensure decimal representation
   String msg = "{\"data\":{\"distance\":";
   msg += String(distance, DEC);
   msg += ",\"alertCount\":";
@@ -119,7 +116,7 @@ void publishData(int distance, int count) {
   mqttClient.publish(data_pub, msg.c_str());
 }
 
-// ─────────────────────────────────────────
+
 void drawDisplay(int distance) {
   uint16_t color = (distance > 0 && distance <= 50)
                    ? ILI9341_RED : ILI9341_WHITE;
@@ -143,7 +140,6 @@ void drawDisplay(int distance) {
   tft.print("cm");
 }
 
-// ─────────────────────────────────────────
 void setup() {
   Serial.begin(115200);
 
@@ -164,7 +160,7 @@ void setup() {
   mqttClient.setServer(mqttServer, mqttPort);
 }
 
-// ─────────────────────────────────────────
+
 void loop() {
   if (!mqttClient.connected()) reconnectMQTT();
   mqttClient.loop();
@@ -176,7 +172,6 @@ void loop() {
   Serial.print(distance);
   Serial.println(" cm");
 
-  // ===== นับ rising edge (เริ่มดังครั้งใหม่) =====
   bool buzzerOn = (distance > 0 && distance <= 50);
   if (buzzerOn && !buzzerWasOn) {
     alertCount++;
