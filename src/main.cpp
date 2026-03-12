@@ -48,6 +48,9 @@ unsigned long lastPublish = 0;
 bool buzzerWasOn = false;
 int  alertCount  = 0;
 
+// for filtering duplicate readings
+int lastDistance = -1;
+
 // ─────────────────────────────────────────
 void setup_wifi() {
   Serial.print("Connecting WiFi: ");
@@ -165,8 +168,15 @@ void loop() {
   if (!mqttClient.connected()) reconnectMQTT();
   mqttClient.loop();
 
-  delay(100);
+  // slower polling to reduce duplicate values
+  delay(200);
   int distance = sonar.ping_cm();
+
+  // skip if reading hasn't changed
+  if (distance == lastDistance) {
+    return;
+  }
+  lastDistance = distance;
 
   Serial.print("Distance: ");
   Serial.print(distance);
@@ -183,16 +193,12 @@ void loop() {
   drawDisplay(distance);
   ledcWrite(BUZZER_CHANNEL, buzzerOn ? 180 : 0);
 
-  // Publish ทุก 2 วินาที
+  // Publish every 2 seconds
   unsigned long now = millis();
   if (now - lastPublish >= PUBLISH_INTERVAL) {
     lastPublish = now;
-    // นับเฉพาะเมื่อวัดใกล้กว่า 50 ซม.
-    if (distance > 0 && distance <= 50) {
-      alertCount++;
-    }
     publishData(distance, alertCount);
-    // ส่งข้อมูลไป Firebase พร้อม alertCount
+    // send data to Firebase
     sendToFirebase(distance, alertCount);
   }
 }
